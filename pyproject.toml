@@ -18,3 +18,10 @@ chat = "chat:repl"
 
 [tool.flake8]
 exclude = ["venv", ".venv", "__pycache__"]
+
+[tool.setuptools]
+py-modules = ["chat"]
+
+[tool.setuptools.packages.find]
+include = ["tools*"]
+exclude = ["test_projects*", "build*", "dist*", "images*"]
