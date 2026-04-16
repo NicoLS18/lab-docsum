@@ -40,6 +40,22 @@ class Chat:
     >>> result = chat.send_message('calculate 2 + 2', temperature=0.0)
     >>> '4' in result or 'result' in result
     True
+
+    >>> chat3 = Chat()
+    >>> result = chat3.send_message(
+    ...     'Use your cat tool to read tools/ls.py',
+    ...     temperature=0.0
+    ... )
+    >>> 'This file contains' in result or 'ls' in result.lower()
+    True
+
+    >>> chat4 = Chat()
+    >>> result = chat4.send_message(
+    ...     'Use your grep tool to search for import in tools/grep.py',
+    ...     temperature=0.0
+    ... )
+    >>> 'import' in result.lower()
+    True
     '''
 
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -114,7 +130,20 @@ class Chat:
                 function_name = tool_call.function.name
                 function_to_call = available_functions[function_name]
                 function_args = json.loads(tool_call.function.arguments)
-                if function_args is None:
+                function_response = function_to_call(**function_args)
+
+                self.messages.append({
+                    "tool_call_id": tool_call.id,
+                    "role": "tool",
+                    "name": function_name,
+                    "content": function_response,
+                })
+            '''
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                function_to_call = available_functions[function_name]
+                function_args = json.loads(tool_call.function.arguments)
+                if function_args is None: # pragma: no cover
                     function_args = {}
 
                 # print('function_name=', function_name)
@@ -150,6 +179,7 @@ class Chat:
                 "name": function_name,
                 "content": function_response,
             })
+            '''
 
             # Step 4: Get final response from model
             second_response = self.client.chat.completions.create(

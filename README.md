@@ -33,7 +33,7 @@ The project contains the following files: README.md, aljonaandbruno.jpg, anna.
 
 ### Markdown Project
 
-This example is good because it shows how the model can analyze a code-based project and identify its components, which include configuration files and output images.
+This example is good because it shows how the model can analyze the structure of a code-based project, determining properties such as the number of files contained.
 
 ```
 $ cd test_projects/project01
@@ -44,8 +44,7 @@ There are 8 files in this project.
 
 ### Webscraping Project
 
-This is a good example because it shows how the model can interpret multiple types of files
-from an external webpage.
+This is a good example because it shows how the model inspect the files used in the project and determine if specific libraries are used by searching for relevant files.
 ```
 $ cd test_projects/project02_webscraping
 $ chat
