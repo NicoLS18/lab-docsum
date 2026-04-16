@@ -78,6 +78,10 @@ class Chat:
                     "such as '2 + 2' or '5 * (3 - 1)'. "
                     "Do not use calculate for names, memory questions, "
                     "or general conversation. "
+                    "After receiving tool results, answer the"
+                    " user's question in natural language."
+                    " Do not repeat raw tool output exactly "
+                    "unless the user explicitly asks for raw output. "
                     "Don't bold the answer."
                     )
             }
@@ -192,7 +196,6 @@ class Chat:
                 tool_choice="none",
             )
             result = second_response.choices[0].message.content
-            # print('result=', result)
             self.messages.append({
                 'role': 'assistant',
                 'content': result

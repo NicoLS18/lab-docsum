@@ -13,3 +13,4 @@ tutorial.py
 .DS_Store
 test_utf16.txt
 bad_encoding.bin
+coverage.xml
