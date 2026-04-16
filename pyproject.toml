@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-chat = "chat:repl"
+chat = "chat:main"
 
 [tool.flake8]
 exclude = ["venv", ".venv", "__pycache__", "build", "test_projects"]

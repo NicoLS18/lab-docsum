@@ -5,6 +5,7 @@ tool usage and automatic tool usage.
 '''
 
 import json
+import sys
 import os
 from groq import Groq
 from tools.calculate import calculate, tool_schema as calculate_schema
@@ -444,5 +445,14 @@ def repl(temperature=0.8):
         print()
 
 
+def main():
+    if len(sys.argv) > 1:
+        message = ' '.join(sys.argv[1:])
+        chat = Chat()
+        print(chat.send_message(message, temperature=0.0))
+    else:
+        repl()
+
+
 if __name__ == '__main__':
-    repl()
+    main()
