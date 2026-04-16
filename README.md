@@ -56,7 +56,7 @@ No, the requests library does not appear to be used in this project, as there ar
 
 My program can optionally take a command line argument that is a message and pass it to the LLM. 
 ```
-$chat 'what files are in test_projects?'
+$ chat 'what files are in test_projects?'
 test_projects/chisatokamakura.github.io test_projects/project01 test_projects/project02_webscraping
 $ chat
 chat> 
