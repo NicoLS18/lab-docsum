@@ -8,9 +8,7 @@
 
 This project is a command-line LLM assistant. It contains a variety of tools that is able to be called both automatically and manually.
 
-<!-- deleted so that it looks less like school project and because link already in your PyPI badge above -->
-
-Anytime you have a figure/code block, write a sentence introducing it.
+This is a demo of the LLM assistant.
 
 ![Demo of lab-docsum](images/demo.gif)
 
