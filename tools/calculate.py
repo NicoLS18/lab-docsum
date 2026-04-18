@@ -28,7 +28,12 @@ tool_schema = {
     "type": "function",
     "function": {
         "name": "calculate",
-        "description": "Evaluate a mathematical expression",
+        "description": (
+            "Evaluate a mathematical expression. "
+            "Use the calculate tool only for valid "
+            "mathematical expressions "
+            "such as '2 + 2' or '5 * (3 - 1)'."
+        ),
         "parameters": {
             "type": "object",
             "properties": {

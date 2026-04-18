@@ -5,8 +5,8 @@ tool usage and automatic tool usage.
 '''
 
 import json
-import sys
 import os
+import argparse
 from groq import Groq
 from tools.calculate import calculate, tool_schema as calculate_schema
 from tools.ls import ls, tool_schema as ls_schema
@@ -61,7 +61,7 @@ class Chat:
     '''
 
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-    MODEL = "llama-3.1-8b-instant"
+    MODEL = "llama-3.3-70b-versatile"
 
     def __init__(self):
         ''' Initialize Chat object with default prompt
@@ -74,7 +74,8 @@ class Chat:
                     "like ls, cat, and grep to inspect current directory."
                     " when answering questions about files."
                     " You will only be able to use one tool."
-                    # it is better to put tool-based instructions in the actual tool schema than the system prompt.
+                    # it is better to put tool-based instructions
+                    # in the actual tool schema than the system prompt.
                     "Use the calculate tool only for valid "
                     "mathematical expressions "
                     "such as '2 + 2' or '5 * (3 - 1)'. "
@@ -93,41 +94,69 @@ class Chat:
         '''Send a message to the language model and return response.'''
         self.messages.append(
             {
-                # I just recommend deleting comments that aren't directly related to the code;
-                # I understand why you had it though
                 'role': 'user',
                 'content': message
             }
         )
-        # define tools
+
         tools = [calculate_schema, ls_schema, cat_schema, grep_schema]
+
+        available_functions = {
+                "calculate": calculate,
+                "ls": ls,
+                "cat": cat,
+                "grep": grep,
+            }
 
         # in order to make non deterministic code deterministic:
         # in this case, has a 'temperature' param that controls randomness:
         # the higher the value, the more randomness;
         # higher temperature = more creativity
 
-        # your code isn't able to do the multi-rounds of tool calls because this call right here is not inside of a for loop
-        chat_completion = self.client.chat.completions.create(
-            messages=self.messages,
-            model=self.MODEL,
-            temperature=temperature,
-            seed=0,
-            tools=tools,
-            tool_choice="auto"
-        )
+        # your code isn't able to do the multi-rounds of tool
+        # calls because this call right here is not inside of a for loop
+        for i in range(10):
+            # ask model
+            chat_completion = self.client.chat.completions.create(
+                messages=self.messages,
+                model=self.MODEL,
+                temperature=temperature,
+                seed=0,
+                tools=tools,
+                tool_choice="auto"
+            )
 
-        response_message = chat_completion.choices[0].message
-        tool_calls = response_message.tool_calls
+            response_message = chat_completion.choices[0].message
+            # check for what tool it calls
+            tool_calls = response_message.tool_calls
 
-        # these step comments are the exact right way
-        # to comment code and makes your code look
-        # like it's written by someone who knows what
-        # they're doing; it'll make the code easier
-        # for you to maintain over a long time and
-        # easier for other people / AIs to understand
-        # you code; nice job!
+            self.messages.append(response_message)
 
+            if not tool_calls:
+                # return result if no tool called
+                self.messages.append({
+                    'role': 'assistant',
+                    'content': response_message.content
+                })
+                return response_message.content
+
+            for tool_call in tool_calls:
+                # use tools if they were called
+                function_name = tool_call.function.name
+                function_to_call = available_functions[function_name]
+                function_args = json.loads(tool_call.function.arguments)
+                function_response = function_to_call(**function_args)
+
+                self.messages.append({
+                    "tool_call_id": tool_call.id,
+                    "role": "tool",
+                    "name": function_name,
+                    "content": function_response,
+                })
+        return "The model did not finish after 10 rounds."  # pragma: no cover
+
+
+'''
         # Step 2: Check if the model wants to call tools
         if tool_calls:
             # Map function names to implementations
@@ -154,10 +183,7 @@ class Chat:
                     "name": function_name,
                     "content": function_response,
                 })
-                # you shouldn't include "dead code"
-                # it's useful to keep while debuging
-                # but not good to have in "published" code
-            
+
             # Step 4: Get final response from model
             second_response = self.client.chat.completions.create(
                 model=self.MODEL,
@@ -180,6 +206,7 @@ class Chat:
                 'content': result
             })
         return result
+'''
 
 
 def repl(temperature=0.8):
@@ -200,11 +227,7 @@ def repl(temperature=0.8):
     >>> builtins.input = monkey_input
     >>> repl(temperature=0.0) # doctest: +ELLIPSIS
     chat> /ls tools
-    the ... here is not good;
-    these tools are all fully deterministic,
-    and so there's no reason not actually show the output
-    the whole purpose of doctests is to let other people
-    know what your code outputs
+    ...tools/calculate.py...tools/cat.py...tools/grep.py...tools/ls.py
     <BLANKLINE>
 
     >>> def monkey_input(prompt, user_inputs=['/cat tools/ls.py']):
@@ -422,11 +445,17 @@ def repl(temperature=0.8):
 
 
 def main():
-    # it's better to use argparse than to manually parse the sys.argv list
-    if len(sys.argv) > 1:
-        message = ' '.join(sys.argv[1:])
+    parser = argparse.ArgumentParser(description="Chat interface")
+    parser.add_argument(
+        "message",
+        nargs="*",
+        help="The message to send to chat.",
+        )
+    args = parser.parse_args()
+    if args.message:
+        message = ' '.join(args.message)
         chat = Chat()
-        print(chat.send_message(message)) # only temp=0 in test cases
+        print(chat.send_message(message))
     else:
         repl()
 
